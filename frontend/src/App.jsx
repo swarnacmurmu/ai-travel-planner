@@ -111,6 +111,10 @@ function App() {
               <p><b>Afternoon:</b> {day.afternoon}</p>
               <p><b>Evening:</b> {day.evening}</p>
               <p><b>Estimated Cost:</b> ₹{day.estimated_cost}</p>
+              <p><b>Stay:</b> ₹{day.budget_breakdown.stay}</p>
+              <p><b>Food:</b> ₹{day.budget_breakdown.food}</p>
+              <p><b>Travel:</b> ₹{day.budget_breakdown.travel}</p>
+              <p><b>Activities:</b> ₹{day.budget_breakdown.activities}</p>
             </div>
           ))}
         </div>
