@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -25,6 +25,12 @@ def home():
 
 @app.post("/generate-trip")
 def generate_trip(trip: TripRequest):
+    if trip.days <= 0:
+        raise HTTPException(status_code=400, detail="Days must be greater than 0")
+
+    if trip.budget <= 0:
+        raise HTTPException(status_code=400, detail="Budget must be greater than 0")
+
     activities = [
         "Visit famous tourist attractions",
         "Explore local food spots",
@@ -41,12 +47,20 @@ def generate_trip(trip: TripRequest):
     for day in range(1, trip.days + 1):
         activity = activities[(day - 1) % len(activities)]
 
+        budget_breakdown = {
+            "stay": daily_budget * 40 // 100,
+            "food": daily_budget * 25 // 100,
+            "travel": daily_budget * 20 // 100,
+            "activities": daily_budget * 15 // 100
+        }
+
         plan.append({
             "day": day,
             "morning": f"{activity} in {trip.destination}",
             "afternoon": f"Have lunch and explore nearby places in {trip.destination}",
             "evening": f"Enjoy a {trip.travel_type}-friendly evening experience in {trip.destination}",
-            "estimated_cost": daily_budget
+            "estimated_cost": daily_budget,
+            "budget_breakdown": budget_breakdown
         })
 
     return {
@@ -55,6 +69,5 @@ def generate_trip(trip: TripRequest):
         "budget": trip.budget,
         "interests": trip.interests,
         "travel_type": trip.travel_type,
-        "plan": plan,
-        
+        "plan": plan
     }
