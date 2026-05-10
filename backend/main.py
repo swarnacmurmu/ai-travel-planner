@@ -33,43 +33,35 @@ def home():
 
 @app.post("/generate-trip")
 def generate_trip(trip: TripRequest):
+
     if trip.days <= 0:
         raise HTTPException(status_code=400, detail="Days must be greater than 0")
 
     if trip.budget <= 0:
         raise HTTPException(status_code=400, detail="Budget must be greater than 0")
 
-    activities = [
-        "Visit famous tourist attractions",
-        "Explore local food spots",
-        "Go for shopping and street markets",
-        "Visit beaches or nature spots",
-        "Try adventure or outdoor activities",
-        "Explore cultural and historical places",
-        "Relax at cafes and scenic viewpoints"
-    ]
+    prompt = f"""
+    Create a detailed travel itinerary.
 
-    plan = []
-    daily_budget = trip.budget // trip.days
+    Destination: {trip.destination}
+    Days: {trip.days}
+    Budget: {trip.budget}
+    Interests: {trip.interests}
+    Travel Type: {trip.travel_type}
 
-    for day in range(1, trip.days + 1):
-        activity = activities[(day - 1) % len(activities)]
+    For each day provide:
+    - Morning activity
+    - Afternoon activity
+    - Evening activity
+    - Estimated daily budget
 
-        budget_breakdown = {
-            "stay": daily_budget * 40 // 100,
-            "food": daily_budget * 25 // 100,
-            "travel": daily_budget * 20 // 100,
-            "activities": daily_budget * 15 // 100
-        }
+    Keep response simple and readable.
+    """
 
-        plan.append({
-            "day": day,
-            "morning": f"{activity} in {trip.destination}",
-            "afternoon": f"Have lunch and explore nearby places in {trip.destination}",
-            "evening": f"Enjoy a {trip.travel_type}-friendly evening experience in {trip.destination}",
-            "estimated_cost": daily_budget,
-            "budget_breakdown": budget_breakdown
-        })
+    response = client.models.generate_content(
+        model="gemini-1.5-flash",
+        contents=prompt
+    )
 
     return {
         "destination": trip.destination,
@@ -77,5 +69,5 @@ def generate_trip(trip: TripRequest):
         "budget": trip.budget,
         "interests": trip.interests,
         "travel_type": trip.travel_type,
-        "plan": plan
+        "ai_plan": response.text
     }
