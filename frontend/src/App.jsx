@@ -3,6 +3,7 @@ import axios from "axios";
 import "./App.css";
 
 function App() {
+  const [destinationImage, setDestinationImage] = useState("");
   const [formData, setFormData] = useState({
     destination: "",
     days: "",
@@ -19,6 +20,21 @@ function App() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const fetchDestinationImage = async (destination) => {
+  try {
+    const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+
+    const response = await axios.get(
+      `https://api.unsplash.com/search/photos?query=${destination} travel&client_id=${accessKey}`
+    );
+
+    const imageUrl = response.data.results[0]?.urls?.regular;
+    setDestinationImage(imageUrl || "");
+  } catch (error) {
+    console.log("Image fetch failed", error);
+    setDestinationImage("");
+  }
+};
   const generateTrip = async (e) => {
     e.preventDefault();
 
@@ -26,6 +42,7 @@ function App() {
       setLoading(true);
       setError("");
       setTripPlan(null);
+      setDestinationImage("");
 
       const response = await axios.post("http://127.0.0.1:8000/generate-trip", {
         destination: formData.destination,
@@ -36,6 +53,7 @@ function App() {
       });
 
       setTripPlan(response.data);
+      fetchDestinationImage(formData.destination);
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -69,6 +87,13 @@ function App() {
 
       {tripPlan && (
         <div className="result">
+          {destinationImage && (
+  <img
+    src={destinationImage}
+    alt={tripPlan.destination}
+    className="destination-image"
+  />
+)}
           <div className="result-header">
             <h2>{tripPlan.destination} Trip Plan</h2>
             <p>{tripPlan.days} Days • ₹{tripPlan.budget} • {tripPlan.travel_type}</p>
