@@ -1,3 +1,11 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
 .container {
   min-height: 100vh;
   padding: 40px;
@@ -8,6 +16,8 @@
 
 h1 {
   color: #1e293b;
+  font-size: 42px;
+  margin-bottom: 20px;
 }
 
 .form {
@@ -23,6 +33,8 @@ input {
   border: 1px solid #94a3b8;
   border-radius: 8px;
   font-size: 16px;
+  color: #1e293b;
+  background-color: white;
 }
 
 button {
@@ -39,18 +51,53 @@ button:hover {
   background-color: #1d4ed8;
 }
 
+button:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  margin-top: 15px;
+  font-weight: bold;
+}
+
 .result {
-  max-width: 600px;
+  max-width: 800px;
   margin: 30px auto;
   background: white;
   padding: 25px;
   border-radius: 12px;
   text-align: left;
+  color: #1e293b;
 }
 
-.day-card {
-  background: #f1f5f9;
-  padding: 15px;
-  margin-top: 15px;
+.result h2 {
+  color: #0f172a;
+}
+
+.ai-plan {
+  white-space: pre-wrap;
+  background: #f8fafc;
+  padding: 20px;
   border-radius: 10px;
+  margin-top: 20px;
+  line-height: 1.7;
+  color: #1e293b;
+  font-family: Arial, sans-serif;
+  overflow-x: auto;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 25px 15px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  .result {
+    padding: 18px;
+  }
 }
