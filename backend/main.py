@@ -41,33 +41,77 @@ def generate_trip(trip: TripRequest):
         raise HTTPException(status_code=400, detail="Budget must be greater than 0")
 
     prompt = f"""
-    Create a detailed travel itinerary.
+    Generate a travel itinerary in STRICT JSON format.
 
     Destination: {trip.destination}
     Days: {trip.days}
-    Budget: {trip.budget}
+    Budget: {trip.budget} INR
     Interests: {trip.interests}
     Travel Type: {trip.travel_type}
 
-    For each day provide:
-    - Morning activity
-    - Afternoon activity
-    - Evening activity
-    - Estimated daily budget
+    Return ONLY valid JSON.
 
-    Keep response simple and readable.
+    Example format:
+
+    {{
+      "summary": "Short summary here",
+      "budget_note": "Budget explanation here",
+      "itinerary": [
+        {{
+          "day": 1,
+          "title": "North Goa Beaches",
+          "morning": "Visit Baga Beach",
+          "afternoon": "Lunch and shopping",
+          "evening": "Sunset dinner",
+          "estimated_cost": 2000,
+          "food_suggestion": "Try Goan seafood",
+          "travel_tip": "Rent a scooter"
+        }}
+      ]
+    }}
+
+    Do not include markdown.
+    Do not include explanation text.
+    Do not write ```json.
+    Generate exactly {trip.days} itinerary objects.
     """
 
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
 
-    return {
-        "destination": trip.destination,
-        "days": trip.days,
-        "budget": trip.budget,
-        "interests": trip.interests,
-        "travel_type": trip.travel_type,
-        "ai_plan": response.text
-    }
+        cleaned_text = response.text.strip()
+        cleaned_text = cleaned_text.replace("```json", "").replace("```", "").strip()
+
+        try:
+            ai_data = json.loads(cleaned_text)
+        except:
+            return {
+                "destination": trip.destination,
+                "days": trip.days,
+                "budget": trip.budget,
+                "interests": trip.interests,
+                "travel_type": trip.travel_type,
+                "summary": "AI could not structure the response properly.",
+                "budget_note": "Please try again.",
+                "itinerary": []
+            }
+
+        return {
+            "destination": trip.destination,
+            "days": trip.days,
+            "budget": trip.budget,
+            "interests": trip.interests,
+            "travel_type": trip.travel_type,
+            "summary": ai_data.get("summary", ""),
+            "budget_note": ai_data.get("budget_note", ""),
+            "itinerary": ai_data.get("itinerary", [])
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"AI response failed: {str(e)}"
+        )
