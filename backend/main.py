@@ -1,14 +1,21 @@
 import os
 import json
+from datetime import datetime
+
 from dotenv import load_dotenv
 from google import genai
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from pymongo import MongoClient
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+mongo_client = MongoClient(os.getenv("MONGODB_URL"))
+db = mongo_client["ai_travel_planner"]
+trips_collection = db["trips"]
 
 app = FastAPI()
 
@@ -33,7 +40,6 @@ def home():
 
 @app.post("/generate-trip")
 def generate_trip(trip: TripRequest):
-
     if trip.days <= 0:
         raise HTTPException(status_code=400, detail="Days must be greater than 0")
 
@@ -77,7 +83,7 @@ def generate_trip(trip: TripRequest):
     """
 
     try:
-        response = client.models.generate_content(
+        response = gemini_client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt
         )
@@ -87,19 +93,28 @@ def generate_trip(trip: TripRequest):
 
         try:
             ai_data = json.loads(cleaned_text)
-        except:
-            return {
-                "destination": trip.destination,
-                "days": trip.days,
-                "budget": trip.budget,
-                "interests": trip.interests,
-                "travel_type": trip.travel_type,
-                "summary": "AI could not structure the response properly.",
-                "budget_note": "Please try again.",
-                "itinerary": []
-            }
+        except Exception:
+            raise HTTPException(
+                status_code=500,
+                detail="AI response was not valid JSON. Please try again."
+            )
+
+        trip_document = {
+            "destination": trip.destination,
+            "days": trip.days,
+            "budget": trip.budget,
+            "interests": trip.interests,
+            "travel_type": trip.travel_type,
+            "summary": ai_data.get("summary", ""),
+            "budget_note": ai_data.get("budget_note", ""),
+            "itinerary": ai_data.get("itinerary", []),
+            "created_at": datetime.utcnow()
+        }
+
+        insert_result = trips_collection.insert_one(trip_document)
 
         return {
+            "id": str(insert_result.inserted_id),
             "destination": trip.destination,
             "days": trip.days,
             "budget": trip.budget,
@@ -110,8 +125,24 @@ def generate_trip(trip: TripRequest):
             "itinerary": ai_data.get("itinerary", [])
         }
 
+    except HTTPException:
+        raise
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"AI response failed: {str(e)}"
+            detail=f"AI or database operation failed: {str(e)}"
         )
+    
+
+
+    @app.get("/saved-trips")
+def get_saved_trips():
+    trips = []
+
+    for trip in trips_collection.find().sort("created_at", -1):
+        trip["_id"] = str(trip["_id"])
+        trip["created_at"] = str(trip["created_at"])
+        trips.append(trip)
+
+    return {"saved_trips": trips}
