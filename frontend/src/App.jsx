@@ -1,15 +1,17 @@
-import { Routes, Route, Link } from "react-router-dom";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { Routes, Route, Link } from "react-router-dom";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import { auth } from "./firebase";
 import "./App.css";
 
 function App() {
   const [destinationImage, setDestinationImage] = useState("");
-
   const [formData, setFormData] = useState({
     destination: "",
     days: "",
@@ -20,14 +22,29 @@ function App() {
 
   const [tripPlan, setTripPlan] = useState(null);
   const [savedTrips, setSavedTrips] = useState([]);
+  const [user, setUser] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ 
-      ...formData, 
-      [e.target.name]: e.target.value 
+  useEffect(() => {
+    fetchSavedTrips();
+
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
     });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
   };
 
   const fetchDestinationImage = async (destination) => {
@@ -48,57 +65,13 @@ function App() {
 
   const fetchSavedTrips = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/saved-trips"
-      );
-
+      const response = await axios.get("http://127.0.0.1:8000/saved-trips");
       setSavedTrips(response.data.saved_trips);
     } catch (error) {
       console.log("Failed to fetch saved trips", error);
     }
   };
 
-  useEffect(() => {
-    fetchSavedTrips();
-  }, []);
-  const downloadPDF = async () => {
-    const input = document.getElementById("trip-result");
-
-    if (!input) return;
-
-    const canvas = await html2canvas(input, {
-      scale: 2,
-      useCORS: true,
-      scrollY: -window.scrollY,
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    const imgWidth = pageWidth;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth,   imgHeight);
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
-    pdf.save(`${tripPlan.destination}-trip-plan.pdf`);
-  };
-
-   
   const generateTrip = async (e) => {
     e.preventDefault();
 
@@ -129,18 +102,59 @@ function App() {
     }
   };
 
-  
-  return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route
-        path="/"
-        element={
-          <div className="container">
+  const downloadPDF = async () => {
+    const input = document.getElementById("trip-result");
+
+    if (!input || !tripPlan) return;
+
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      useCORS: true,
+      scrollY: -window.scrollY,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`${tripPlan.destination}-trip-plan.pdf`);
+  };
+
+  const homePage = (
+    <div className="container">
       <div className="hero">
         <h1>AI Travel Planner</h1>
         <p>Create personalized day-wise travel plans using AI</p>
+
+        {user ? (
+          <div className="user-info">
+            <p>Logged in as: {user.email}</p>
+            <button onClick={handleLogout}>Logout</button>
+          </div>
+        ) : (
+          <div className="auth-links">
+            <Link to="/login">Login</Link>
+            <Link to="/signup">Signup</Link>
+          </div>
+        )}
       </div>
 
       <form onSubmit={generateTrip} className="form">
@@ -206,16 +220,15 @@ function App() {
           )}
 
           <div className="result-header">
-            <button
-              className="download-btn"
-              onClick={downloadPDF}
-            >
-              Download PDF
-            </button>
             <h2>{tripPlan.destination} Trip Plan</h2>
             <p>
-              {tripPlan.days} Days • ₹{tripPlan.budget} • {tripPlan.travel_type}
+              {tripPlan.days} Days • ₹{tripPlan.budget} •{" "}
+              {tripPlan.travel_type}
             </p>
+
+            <button className="download-btn" onClick={downloadPDF}>
+              Download PDF
+            </button>
           </div>
 
           <div className="summary-card">
@@ -281,9 +294,7 @@ function App() {
                   {trip.days} Days • ₹{trip.budget}
                 </p>
 
-                <p className="saved-trip-type">
-                  {trip.travel_type}
-                </p>
+                <p className="saved-trip-type">{trip.travel_type}</p>
 
                 <p className="saved-trip-summary">
                   {trip.summary?.slice(0, 130)}...
@@ -293,11 +304,16 @@ function App() {
           </div>
         </div>
       )}
-           </div>
-      }
-    />
-  </Routes>
-);
+    </div>
+  );
+
+  return (
+    <Routes>
+      <Route path="/" element={homePage} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+    </Routes>
+  );
 }
 
 export default App;
