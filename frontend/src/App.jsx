@@ -1,3 +1,5 @@
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
@@ -56,7 +58,44 @@ function App() {
   useEffect(() => {
     fetchSavedTrips();
   }, []);
+  const downloadPDF = async () => {
+    const input = document.getElementById("trip-result");
 
+    if (!input) return;
+
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      useCORS: true,
+      scrollY: -window.scrollY,
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF("p", "mm", "a4");
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgWidth = pageWidth;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth,   imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save(`${tripPlan.destination}-trip-plan.pdf`);
+  };
+
+   
   const generateTrip = async (e) => {
     e.preventDefault();
 
@@ -147,7 +186,7 @@ function App() {
       {error && <p className="error">{error}</p>}
 
       {tripPlan && (
-        <div className="result">
+        <div className="result" id="trip-result">
           {destinationImage && (
             <img
               src={destinationImage}
@@ -157,6 +196,12 @@ function App() {
           )}
 
           <div className="result-header">
+            <button
+              className="download-btn"
+              onClick={downloadPDF}
+            >
+              Download PDF
+            </button>
             <h2>{tripPlan.destination} Trip Plan</h2>
             <p>
               {tripPlan.days} Days • ₹{tripPlan.budget} • {tripPlan.travel_type}
