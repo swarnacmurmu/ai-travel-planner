@@ -1,3 +1,6 @@
+import { Routes, Route, Link } from "react-router-dom";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useState, useEffect } from "react";
@@ -126,8 +129,15 @@ function App() {
     }
   };
 
+  
   return (
-    <div className="container">
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route
+        path="/"
+        element={
+          <div className="container">
       <div className="hero">
         <h1>AI Travel Planner</h1>
         <p>Create personalized day-wise travel plans using AI</p>
@@ -283,8 +293,11 @@ function App() {
           </div>
         </div>
       )}
-    </div>
-  );
+           </div>
+      }
+    />
+  </Routes>
+);
 }
 
 export default App;
