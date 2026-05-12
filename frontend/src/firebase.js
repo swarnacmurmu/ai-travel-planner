@@ -2,12 +2,12 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCmBoB3KElZ8qnY1qhepN6rxjSaf5EiPpM",
-  authDomain: "ai-travel-planner-1fc07.firebaseapp.com",
-  projectId: "ai-travel-planner-1fc07",
-  storageBucket: "ai-travel-planner-1fc07.firebasestorage.app",
-  messagingSenderId: "818137669150",
-  appId: "1:818137669150:web:455d9de3d5f60e914e180f"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
