@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
 
 function App() {
   const [destinationImage, setDestinationImage] = useState("");
+
   const [formData, setFormData] = useState({
     destination: "",
     days: "",
@@ -13,28 +14,49 @@ function App() {
   });
 
   const [tripPlan, setTripPlan] = useState(null);
+  const [savedTrips, setSavedTrips] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({ 
+      ...formData, 
+      [e.target.name]: e.target.value 
+    });
   };
 
   const fetchDestinationImage = async (destination) => {
-  try {
-    const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+    try {
+      const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
 
-    const response = await axios.get(
-      `https://api.unsplash.com/search/photos?query=${destination} travel&client_id=${accessKey}`
-    );
+      const response = await axios.get(
+        `https://api.unsplash.com/search/photos?query=${destination} travel&client_id=${accessKey}`
+      );
 
-    const imageUrl = response.data.results[0]?.urls?.regular;
-    setDestinationImage(imageUrl || "");
-  } catch (error) {
-    console.log("Image fetch failed", error);
-    setDestinationImage("");
-  }
-};
+      const imageUrl = response.data.results[0]?.urls?.regular;
+      setDestinationImage(imageUrl || "");
+    } catch (error) {
+      console.log("Image fetch failed", error);
+      setDestinationImage("");
+    }
+  };
+
+  const fetchSavedTrips = async () => {
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:8000/saved-trips"
+      );
+
+      setSavedTrips(response.data.saved_trips);
+    } catch (error) {
+      console.log("Failed to fetch saved trips", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSavedTrips();
+  }, []);
+
   const generateTrip = async (e) => {
     e.preventDefault();
 
@@ -54,6 +76,7 @@ function App() {
 
       setTripPlan(response.data);
       fetchDestinationImage(formData.destination);
+      fetchSavedTrips();
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -72,11 +95,49 @@ function App() {
       </div>
 
       <form onSubmit={generateTrip} className="form">
-        <input name="destination" placeholder="Destination" value={formData.destination} onChange={handleChange} required />
-        <input type="number" name="days" placeholder="Number of days" value={formData.days} onChange={handleChange} min="1" required />
-        <input type="number" name="budget" placeholder="Budget in ₹" value={formData.budget} onChange={handleChange} min="1" required />
-        <input name="interests" placeholder="Interests: beach, shopping, food" value={formData.interests} onChange={handleChange} required />
-        <input name="travel_type" placeholder="Travel type: solo, family, friends, couple" value={formData.travel_type} onChange={handleChange} required />
+        <input
+          name="destination"
+          placeholder="Destination"
+          value={formData.destination}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          type="number"
+          name="days"
+          placeholder="Number of days"
+          value={formData.days}
+          onChange={handleChange}
+          min="1"
+          required
+        />
+
+        <input
+          type="number"
+          name="budget"
+          placeholder="Budget in ₹"
+          value={formData.budget}
+          onChange={handleChange}
+          min="1"
+          required
+        />
+
+        <input
+          name="interests"
+          placeholder="Interests: beach, shopping, food"
+          value={formData.interests}
+          onChange={handleChange}
+          required
+        />
+
+        <input
+          name="travel_type"
+          placeholder="Travel type: solo, family, friends, couple"
+          value={formData.travel_type}
+          onChange={handleChange}
+          required
+        />
 
         <button type="submit" disabled={loading}>
           {loading ? "Generating..." : "Generate Trip"}
@@ -88,21 +149,26 @@ function App() {
       {tripPlan && (
         <div className="result">
           {destinationImage && (
-  <img
-    src={destinationImage}
-    alt={tripPlan.destination}
-    className="destination-image"
-  />
-)}
+            <img
+              src={destinationImage}
+              alt={tripPlan.destination}
+              className="destination-image"
+            />
+          )}
+
           <div className="result-header">
             <h2>{tripPlan.destination} Trip Plan</h2>
-            <p>{tripPlan.days} Days • ₹{tripPlan.budget} • {tripPlan.travel_type}</p>
+            <p>
+              {tripPlan.days} Days • ₹{tripPlan.budget} • {tripPlan.travel_type}
+            </p>
           </div>
 
           <div className="summary-card">
             <h3>Trip Summary</h3>
             <p>{tripPlan.summary}</p>
-            <p><b>Budget Note:</b> {tripPlan.budget_note}</p>
+            <p>
+              <b>Budget Note:</b> {tripPlan.budget_note}
+            </p>
           </div>
 
           <h3 className="section-title">Day-wise Itinerary</h3>
@@ -132,12 +198,44 @@ function App() {
               </div>
 
               <div className="extra-info">
-                <p><b>Estimated Cost:</b> ₹{day.estimated_cost}</p>
-                <p><b>Food Suggestion:</b> {day.food_suggestion}</p>
-                <p><b>Travel Tip:</b> {day.travel_tip}</p>
+                <p>
+                  <b>Estimated Cost:</b> ₹{day.estimated_cost}
+                </p>
+                <p>
+                  <b>Food Suggestion:</b> {day.food_suggestion}
+                </p>
+                <p>
+                  <b>Travel Tip:</b> {day.travel_tip}
+                </p>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {savedTrips.length > 0 && (
+        <div className="saved-trips-section">
+          <h2>Saved Trips</h2>
+
+          <div className="saved-trips-grid">
+            {savedTrips.map((trip) => (
+              <div key={trip._id} className="saved-trip-card">
+                <h3>{trip.destination}</h3>
+
+                <p>
+                  {trip.days} Days • ₹{trip.budget}
+                </p>
+
+                <p className="saved-trip-type">
+                  {trip.travel_type}
+                </p>
+
+                <p className="saved-trip-summary">
+                  {trip.summary?.slice(0, 130)}...
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
