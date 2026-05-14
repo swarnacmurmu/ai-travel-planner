@@ -9,6 +9,10 @@ The application combines:
 - REST APIs
 - Responsive UI/UX
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> d66396a5e7dc6c1a2412890331e330c67e88c0a1
 to deliver a modern real-world travel planning experience.
 
 ---
@@ -211,4 +215,8 @@ This feature enhances usability and real-world practicality.
 
 ```bash
 git clone https://github.com/swarnacmurmu/ai-travel-planner.git
+<<<<<<< HEAD
 cd ai-travel-planner
+=======
+cd ai-travel-planner
+>>>>>>> d66396a5e7dc6c1a2412890331e330c67e88c0a1
