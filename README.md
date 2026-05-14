@@ -1,258 +1,214 @@
 # ✈️ AI Travel Planner
 
-An AI-powered travel itinerary planner built using **React.js**, **FastAPI**, and **Google Gemini AI**.  
-The application generates personalized day-wise travel plans based on destination, budget, interests, and travel type.
+An intelligent full-stack AI-powered travel planning platform that generates personalized day-wise itineraries using Google Gemini AI.
+
+The application combines:
+- Generative AI
+- Cloud Databases
+- Authentication Systems
+- REST APIs
+- Responsive UI/UX
+
+to deliver a modern real-world travel planning experience.
 
 ---
 
-# 🚀 Features
+# 🌟 Project Highlights
 
-- 🤖 AI-generated travel itineraries using Gemini AI
-- 📅 Day-wise travel planning
-- 💰 Budget-aware recommendations
-- 🌍 Personalized travel suggestions
-- 🖼️ Dynamic destination images using Unsplash API
-- 🌤️ Weather forecast integration
-- 📱 Responsive modern UI
-- ⚡ FastAPI backend + React frontend architecture
+## 🚀 What Makes This Project Unique?
 
----
+Unlike basic travel itinerary generators, this platform provides:
 
-# 🛠️ Tech Stack
+✅ AI-generated personalized itineraries  
+✅ Budget-aware recommendations  
+✅ Travel-type customization  
+✅ Firebase Authentication  
+✅ MongoDB cloud storage  
+✅ PDF itinerary downloads  
+✅ Weather integration  
+✅ Dynamic destination images  
+✅ User-specific saved trips  
+✅ Modern responsive UI  
 
-## Frontend
-- React.js
-- Vite
-- Axios
-- CSS3
-
-## Backend
-- FastAPI
-- Python
-- Gemini AI API
-- Pydantic
-
-## APIs Used
-- Google Gemini API
-- Unsplash API
-- OpenWeatherMap API
+This project demonstrates practical implementation of Large Language Models (LLMs) in a production-style application.
 
 ---
 
-# 📂 Project Structure
+# 🏠 Home Page
+
+The homepage allows users to:
+- Enter destination
+- Select trip duration
+- Set budget
+- Add interests
+- Choose travel type
+
+Users can instantly generate personalized itineraries using AI.
+
+![Home Page](frontend/public/screenshots/home.png)
+
+---
+
+# 🤖 AI-Powered Itinerary Generation
+
+The core feature uses Google Gemini AI to generate:
+
+- Day-wise travel plans
+- Food recommendations
+- Local exploration suggestions
+- Travel tips
+- Budget recommendations
+
+The AI adapts responses dynamically based on:
+- Destination
+- Budget
+- Interests
+- Travel duration
+- Travel type
+
+---
+
+# 📸 AI Generated Travel Plan
+
+The generated itinerary includes:
+- Trip summary
+- Budget note
+- Daily activities
+- Morning/Afternoon/Evening plans
+- Estimated daily cost
+
+![AI Itinerary](frontend/public/screenshots/itinerary.png)
+
+
+
+![AI Itinerary](frontend/public/screenshots/itinerary1.png)
+
+---
+
+# 🔐 Authentication System
+
+Implemented using Firebase Authentication.
+
+### Features:
+- Secure Signup/Login
+- Persistent Login Sessions
+- User-specific itinerary storage
+- Protected travel history
+
+This significantly improves real-world usability and demonstrates cloud authentication integration.
+
+---
+
+# 🔑 Login Interface
+
+Users can securely access their personalized travel dashboard.
+
+![Login Page](frontend/public/screenshots/login.png)
+
+---
+
+# ✨ Signup Interface
+
+New users can create accounts and start saving AI-generated itineraries.
+
+![Signup Page](frontend/public/screenshots/signup.png)
+
+---
+
+# ☁️ MongoDB Atlas Cloud Storage
+
+MongoDB Atlas is used for:
+- Storing generated itineraries
+- Managing user-specific travel history
+- Persistent trip management
+
+Each trip is linked to an authenticated user.
+
+---
+
+# ❤️ Saved Trips Dashboard
+
+Users can:
+- Access previous itineraries
+- View trip details
+- Delete trips
+- Manage travel history
+
+![Saved Trips](frontend/public/screenshots/saved-trips.png)
+
+---
+
+# 🌦 Weather Integration
+
+The application dynamically fetches weather information for destinations.
+
+### Includes:
+- Temperature
+- Weather conditions
+- Forecast guidance
+
+This improves travel planning practicality.
+
+---
+
+# 🖼 Dynamic Destination Images
+
+Destination images are fetched dynamically using the Unsplash API.
+
+### Benefits:
+- Improved user engagement
+- Modern visual appearance
+- Enhanced UI experience
+
+---
+
+# 📄 PDF Export Feature
+
+Users can download generated itineraries as professional PDF documents.
+
+### Includes:
+- Trip summary
+- Day-wise itinerary
+- Budget details
+- Recommendations
+
+This feature enhances usability and real-world practicality.
+
+---
+
+# 🛠 Tech Stack
+
+## Frontend Technologies
+
+| Technology | Purpose |
+|---|---|
+| React.js | Frontend framework |
+| Vite | Development environment |
+| Axios | API communication |
+| Firebase Authentication | User authentication |
+| jsPDF | PDF export |
+| html2canvas | HTML-to-PDF conversion |
+| CSS3 | Styling & responsive UI |
+
+---
+
+## Backend Technologies
+
+| Technology | Purpose |
+|---|---|
+| FastAPI | Backend framework |
+| Python | Backend development |
+| Google Gemini API | AI itinerary generation |
+| MongoDB Atlas | Cloud database |
+| PyMongo | MongoDB integration |
+| Uvicorn | ASGI server |
+
+---
+
+# ⚙️ Installation & Setup Guide
+
+# 1️⃣ Clone Repository
 
 ```bash
-ai-travel-planner/
-│
-├── backend/
-│   ├── main.py
-│   ├── requirements.txt
-│   ├── .env
-│
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │
-│   ├── .env
-│   ├── package.json
-│
-├── README.md
-```
-
----
-
-# ⚙️ Installation & Setup
-
-## 1️⃣ Clone Repository
-
-```bash
-git clone https://github.com/your-username/ai-travel-planner.git
+git clone https://github.com/swarnacmurmu/ai-travel-planner.git
 cd ai-travel-planner
-```
-
----
-
-# 🔹 Backend Setup
-
-## Create Virtual Environment
-
-```bash
-cd backend
-python -m venv venv
-```
-
-## Activate Virtual Environment
-
-### Windows
-
-```bash
-venv\Scripts\activate
-```
-
-### Mac/Linux
-
-```bash
-source venv/bin/activate
-```
-
----
-
-## Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Create `.env`
-
-Inside `backend/.env`
-
-```env
-GEMINI_API_KEY=your_gemini_api_key
-```
-
----
-
-## Run Backend
-
-```bash
-uvicorn main:app --reload
-```
-
-Backend runs on:
-
-```txt
-http://127.0.0.1:8000
-```
-
----
-
-# 🔹 Frontend Setup
-
-## Install Dependencies
-
-```bash
-cd frontend
-npm install
-```
-
----
-
-## Create `.env`
-
-Inside `frontend/.env`
-
-```env
-VITE_UNSPLASH_ACCESS_KEY=your_unsplash_key
-VITE_WEATHER_API_KEY=your_weather_api_key
-```
-
----
-
-## Run Frontend
-
-```bash
-npm run dev
-```
-
-Frontend runs on:
-
-```txt
-http://localhost:5173
-```
-
----
-
-# 🧠 How It Works
-
-1. User enters:
-   - Destination
-   - Budget
-   - Number of days
-   - Interests
-   - Travel type
-
-2. React frontend sends request to FastAPI backend.
-
-3. Backend sends prompt to Gemini AI.
-
-4. Gemini AI generates structured itinerary.
-
-5. Frontend displays:
-   - Destination image
-   - Trip summary
-   - Day-wise itinerary
-   - Travel tips
-   - Food suggestions
-
----
-
-# 📸 Screenshots
-
-## Home Page
-
-_Add screenshot here_
-
-## AI Generated Itinerary
-
-_Add screenshot here_
-
----
-
-# 🔐 Environment Variables
-
-## Backend
-
-```env
-GEMINI_API_KEY=
-```
-
-## Frontend
-
-```env
-VITE_UNSPLASH_ACCESS_KEY=
-VITE_WEATHER_API_KEY=
-```
-
----
-
-# 📌 Future Enhancements
-
-- 🔐 User Authentication
-- 💾 Save Trips to Database
-- 📄 PDF Export
-- 🗺️ Google Maps Integration
-- ❤️ Favorite Trips
-- 📱 Mobile App Version
-
----
-
-# 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-2. Create a new branch
-3. Commit changes
-4. Push the branch
-5. Create Pull Request
-
----
-
-# 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-# 👨‍💻 Author
-
-**Swarna Champa Murmu**
-
-- GitHub: https://github.com/swarnacmurmu
-- LinkedIn: https://linkedin.com/in/swarna-champa-murmu
-
----

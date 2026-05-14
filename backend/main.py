@@ -1,3 +1,4 @@
+from bson import ObjectId
 import os
 import json
 from datetime import datetime
@@ -11,14 +12,25 @@ from pymongo import MongoClient
 
 load_dotenv()
 
-gemini_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# Gemini Client
+gemini_client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
 
-mongo_client = MongoClient(os.getenv("MONGODB_URL"))
+# MongoDB Connection
+mongo_client = MongoClient(
+    os.getenv("MONGODB_URL"),
+    tls=True,
+    tlsAllowInvalidCertificates=True
+)
+
 db = mongo_client["ai_travel_planner"]
 trips_collection = db["trips"]
 
+# FastAPI App
 app = FastAPI()
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -27,24 +39,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Request Model
 class TripRequest(BaseModel):
     destination: str
     days: int
     budget: int
     interests: str
     travel_type: str
+    user_email: str
 
+
+# Home Route
 @app.get("/")
 def home():
     return {"message": "Backend is running"}
 
+
+# Generate Trip Route
 @app.post("/generate-trip")
 def generate_trip(trip: TripRequest):
+
     if trip.days <= 0:
-        raise HTTPException(status_code=400, detail="Days must be greater than 0")
+        raise HTTPException(
+            status_code=400,
+            detail="Days must be greater than 0"
+        )
 
     if trip.budget <= 0:
-        raise HTTPException(status_code=400, detail="Budget must be greater than 0")
+        raise HTTPException(
+            status_code=400,
+            detail="Budget must be greater than 0"
+        )
 
     prompt = f"""
     Generate a travel itinerary in STRICT JSON format.
@@ -89,29 +114,39 @@ def generate_trip(trip: TripRequest):
         )
 
         cleaned_text = response.text.strip()
-        cleaned_text = cleaned_text.replace("```json", "").replace("```", "").strip()
+        cleaned_text = cleaned_text.replace(
+            "```json", ""
+        ).replace(
+            "```", ""
+        ).strip()
 
         try:
             ai_data = json.loads(cleaned_text)
+
         except Exception:
             raise HTTPException(
                 status_code=500,
                 detail="AI response was not valid JSON. Please try again."
             )
 
+        # MongoDB Document
         trip_document = {
             "destination": trip.destination,
             "days": trip.days,
             "budget": trip.budget,
             "interests": trip.interests,
             "travel_type": trip.travel_type,
+            "user_email": trip.user_email,
             "summary": ai_data.get("summary", ""),
             "budget_note": ai_data.get("budget_note", ""),
             "itinerary": ai_data.get("itinerary", []),
             "created_at": datetime.utcnow()
         }
 
-        insert_result = trips_collection.insert_one(trip_document)
+        # Save to MongoDB
+        insert_result = trips_collection.insert_one(
+            trip_document
+        )
 
         return {
             "id": str(insert_result.inserted_id),
@@ -133,16 +168,55 @@ def generate_trip(trip: TripRequest):
             status_code=500,
             detail=f"AI or database operation failed: {str(e)}"
         )
-    
 
 
-    @app.get("/saved-trips")
-def get_saved_trips():
-    trips = []
+# Saved Trips Route
+@app.get("/saved-trips/{email}")
+def get_saved_trips(email: str):
 
-    for trip in trips_collection.find().sort("created_at", -1):
-        trip["_id"] = str(trip["_id"])
-        trip["created_at"] = str(trip["created_at"])
-        trips.append(trip)
+    try:
+        trips = []
 
-    return {"saved_trips": trips}
+        results = trips_collection.find({
+            "user_email": email
+        }).sort("created_at", -1)
+
+        for trip in results:
+            trip["_id"] = str(trip["_id"])
+
+            if "created_at" in trip:
+                trip["created_at"] = str(trip["created_at"])
+
+            trips.append(trip)
+
+        return {"saved_trips": trips}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+@app.delete("/delete-trip/{trip_id}")
+def delete_trip(trip_id: str):
+
+    try:
+        result = trips_collection.delete_one({
+            "_id": ObjectId(str(trip_id))
+        })
+
+        if result.deleted_count == 0:
+            raise HTTPException(
+                status_code=404,
+                detail="Trip not found"
+            )
+
+        return {
+            "message": "Trip deleted successfully"
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
