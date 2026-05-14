@@ -27,10 +27,12 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchSavedTrips();
-
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+
+      if (currentUser?.email) {
+        fetchSavedTrips(currentUser.email);
+      }
     });
 
     return () => unsubscribe();
@@ -63,9 +65,13 @@ function App() {
     }
   };
 
-  const fetchSavedTrips = async () => {
+  const fetchSavedTrips = async (email) => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/saved-trips");
+      if (!user?.email) return;
+
+      const response = await axios.get(
+        `http://127.0.0.1:8000/saved-trips/${user.email}`
+      );
       setSavedTrips(response.data.saved_trips);
     } catch (error) {
       console.log("Failed to fetch saved trips", error);
@@ -87,6 +93,7 @@ function App() {
         budget: Number(formData.budget),
         interests: formData.interests,
         travel_type: formData.travel_type,
+        user_email: user?.email || "",
       });
 
       setTripPlan(response.data);
