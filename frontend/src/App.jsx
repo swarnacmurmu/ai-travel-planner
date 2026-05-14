@@ -294,7 +294,11 @@ function App() {
 
           <div className="saved-trips-grid">
             {savedTrips.map((trip) => (
-              <div key={trip._id} className="saved-trip-card">
+              <div
+                key={trip._id}
+                className="saved-trip-card"
+                onClick={() => openSavedTrip(trip)}
+              >
                 <h3>{trip.destination}</h3>
 
                 <p>
@@ -313,6 +317,26 @@ function App() {
       )}
     </div>
   );
+  const openSavedTrip = (trip) => {
+    setTripPlan({
+      id: trip._id,
+      destination: trip.destination,
+      days: trip.days,
+      budget: trip.budget,
+      interests: trip.interests,
+      travel_type: trip.travel_type,
+      summary: trip.summary,
+      budget_note: trip.budget_note,
+      itinerary: trip.itinerary,
+    });
+
+    fetchDestinationImage(trip.destination);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <Routes>
