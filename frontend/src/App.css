@@ -260,6 +260,46 @@ button:disabled {
   line-height: 1.6;
 }
 
+.saved-trip-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.view-btn {
+  flex: 1;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.delete-btn {
+  flex: 1;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.empty-state {
+  text-align: center;
+  margin-top: 40px;
+  color: #475569;
+  font-size: 18px;
+}
+
+.loading-trips {
+  text-align: center;
+  margin-top: 40px;
+  color: #2563eb;
+  font-size: 18px;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 25px 16px;

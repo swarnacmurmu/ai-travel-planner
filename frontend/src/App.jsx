@@ -25,6 +25,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingTrips, setLoadingTrips] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -67,14 +68,21 @@ function App() {
 
   const fetchSavedTrips = async (email) => {
     try {
-      if (!user?.email) return;
+      setLoadingTrips(true);
+
+      if (!email) return;
 
       const response = await axios.get(
-        `http://127.0.0.1:8000/saved-trips/${user.email}`
+        `http://127.0.0.1:8000/saved-trips/${email}`
       );
+
       setSavedTrips(response.data.saved_trips);
+
     } catch (error) {
-      console.log("Failed to fetch saved trips", error);
+      console.log("Failed to fetch saved trips");
+
+    } finally {
+      setLoadingTrips(false);
     }
   };
 
@@ -98,7 +106,7 @@ function App() {
 
       setTripPlan(response.data);
       fetchDestinationImage(formData.destination);
-      fetchSavedTrips();
+      fetchSavedTrips(user?.email);
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -288,6 +296,17 @@ function App() {
         </div>
       )}
 
+      {!loadingTrips && savedTrips.length === 0 && user && (
+    <div className="empty-state">
+      <p>No saved trips yet.</p>
+    </div>
+  )}
+    {loadingTrips && (
+    <div className="loading-trips">
+      <p>Loading saved trips...</p>
+    </div>
+  )}
+
       {savedTrips.length > 0 && (
         <div className="saved-trips-section">
           <h2>Saved Trips</h2>
@@ -297,7 +316,6 @@ function App() {
               <div
                 key={trip._id}
                 className="saved-trip-card"
-                onClick={() => openSavedTrip(trip)}
               >
                 <h3>{trip.destination}</h3>
 
@@ -310,6 +328,24 @@ function App() {
                 <p className="saved-trip-summary">
                   {trip.summary?.slice(0, 130)}...
                 </p>
+                <div className="saved-trip-actions">
+                  <button
+                    className="view-btn"
+                    onClick={() => openSavedTrip(trip)}
+                  >
+                    View Trip
+                  </button>
+
+                  <button
+                    className="delete-btn"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();deleteTrip(trip._id);
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -337,6 +373,31 @@ function App() {
       behavior: "smooth",
     });
   };
+
+
+  const deleteTrip = async (tripId) => {
+  try {
+    console.log("Deleting:", tripId);
+
+    const response = await axios.delete(
+      `http://127.0.0.1:8000/delete-trip/${tripId}`
+    );
+
+    console.log("Deleted:", response.data);
+
+    setSavedTrips((prevTrips) =>
+      prevTrips.filter((trip) => trip._id !== tripId)
+    );
+
+    if (tripPlan?.id === tripId) {
+      setTripPlan(null);
+      setDestinationImage("");
+    }
+  } catch (error) {
+    console.log("Delete failed:", error);
+  }
+};
+
 
   return (
     <Routes>
