@@ -337,3 +337,97 @@ button:disabled {
   .download-btn:hover {
     background: #1e293b;
   }
+
+
+  .auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 430px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(12px);
+  padding: 35px;
+  border-radius: 24px;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  text-align: center;
+}
+
+.auth-card h2 {
+  margin: 0;
+  font-size: 32px;
+  color: #0f172a;
+}
+
+.auth-card p {
+  margin: 0 0 12px;
+  color: #64748b;
+}
+
+.auth-card input {
+  width: 100%;
+}
+
+.auth-card span {
+  color: #475569;
+  font-size: 14px;
+}
+
+.auth-card a {
+  color: #2563eb;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+.back-home {
+  margin-top: 5px;
+  font-size: 14px;
+}
+
+.auth-links {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+}
+
+.auth-links a {
+  text-decoration: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: 0.3s ease;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.12);
+}
+
+.auth-links a:first-child {
+  background: #2563eb;
+  color: white;
+}
+
+.auth-links a:last-child {
+  background: white;
+  color: #2563eb;
+  border: 1px solid #cbd5e1;
+}
+
+.auth-links a:hover {
+  transform: translateY(-2px);
+}
